@@ -60,7 +60,7 @@ public struct IVector2 : IEquatable<IVector2>
         this.y = y;
     }
 
-    public string ToString()
+    public override string ToString()
     {
         return string.Format("({0}, {1})", x, y);
     }
@@ -255,7 +255,7 @@ public struct IVector3 : IEquatable<IVector3>
         this.z = z;
     }
 
-    public string ToString()
+    public override string ToString()
     {
         return string.Format("({0}, {1}, {2})", x, y, z);
     }

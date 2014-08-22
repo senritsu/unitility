@@ -5,21 +5,13 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class RaycastMask : MonoBehaviour, ICanvasRaycastFilter
 {
-    private Image _image;
-    public bool DynamicImage;
+    private Sprite _sprite;
 
 	void Start ()
 	{
-	    _image = GetComponent<Image>();
+	    _sprite = GetComponent<Image>().sprite;
 	}
 	
-	void Update () {
-	    if (DynamicImage)
-	    {
-	        _image = GetComponent<Image>();
-	    }
-	}
-
     public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
     {
         var rectTransform = (RectTransform)transform;
@@ -30,13 +22,13 @@ public class RaycastMask : MonoBehaviour, ICanvasRaycastFilter
             (local.x + rectTransform.pivot.x*rectTransform.rect.width)/rectTransform.rect.width,
             (local.y + rectTransform.pivot.y*rectTransform.rect.height)/rectTransform.rect.width);
         // convert to texture space
-        var rect = _image.sprite.textureRect;
+        var rect = _sprite.textureRect;
         var x = Mathf.FloorToInt(rect.x + rect.width * normalized.x);
         var y = Mathf.FloorToInt(rect.y + rect.height * normalized.y);
         // destroy component if texture import settings are wrong
         try
         {
-            return _image.sprite.texture.GetPixel(x,y).a > 0;
+            return _sprite.texture.GetPixel(x,y).a > 0;
         }
         catch (UnityException e)
         {

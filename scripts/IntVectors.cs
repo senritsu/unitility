@@ -35,7 +35,7 @@ public struct IVector2 : IEquatable<IVector2>
 
     public int sqrMagnitude
     {
-        get { return x*x + y*y; }
+        get { return x * x + y * y; }
     }
     public float magnitude
     {
@@ -96,7 +96,7 @@ public struct IVector2 : IEquatable<IVector2>
 
     public static float Distance(IVector2 v1, IVector2 v2)
     {
-        return (v1-v2).magnitude;
+        return (v1 - v2).magnitude;
     }
 
     public static int Dot(IVector2 v1, IVector2 v2)
@@ -117,6 +117,16 @@ public struct IVector2 : IEquatable<IVector2>
     public static IVector2 Max(IVector2 v1, IVector2 v2)
     {
         return new IVector2(Mathf.Max(v1.x, v2.x), Mathf.Max(v1.y, v2.y));
+    }
+
+    public IVector2 RotateLeft()
+    {
+        return new IVector2(-y, x);
+    }
+
+    public IVector2 RotateRight()
+    {
+        return new IVector2(y, -x);
     }
 
     public static IVector2 operator +(IVector2 v1, IVector2 v2)
@@ -141,7 +151,7 @@ public struct IVector2 : IEquatable<IVector2>
 
     public static IVector2 operator *(int i, IVector2 v)
     {
-        return v*i;
+        return v * i;
     }
 
     public static IVector2 operator *(IVector2 v, int i)
@@ -169,6 +179,16 @@ public struct IVector2 : IEquatable<IVector2>
         return new IVector2(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y));
     }
 
+    public static implicit operator Vector3(IVector2 v)
+    {
+        return new Vector3(v.x, v.y);
+    }
+
+    public static implicit operator IVector2(Vector3 v)
+    {
+        return new IVector2(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y));
+    }
+
     public static implicit operator IVector3(IVector2 v)
     {
         return new IVector3(v.x, v.y, 0);
@@ -187,14 +207,14 @@ public struct IVector2 : IEquatable<IVector2>
     public override bool Equals(object obj)
     {
         if (ReferenceEquals(null, obj)) return false;
-        return obj is IVector2 && Equals((IVector2) obj);
+        return obj is IVector2 && Equals((IVector2)obj);
     }
 
     public override int GetHashCode()
     {
         unchecked
         {
-            return (x*397) ^ y;
+            return (x * 397) ^ y;
         }
     }
 
@@ -223,7 +243,7 @@ public struct IVector3 : IEquatable<IVector3>
 
     public int sqrMagnitude
     {
-        get { return x*x + y*y + z*z; }
+        get { return x * x + y * y + z * z; }
     }
     public float magnitude
     {
@@ -341,7 +361,7 @@ public struct IVector3 : IEquatable<IVector3>
 
     public static IVector3 operator *(int i, IVector3 v)
     {
-        return v*i;
+        return v * i;
     }
 
     public static IVector3 operator *(IVector3 v, int i)
@@ -377,7 +397,7 @@ public struct IVector3 : IEquatable<IVector3>
     public override bool Equals(object obj)
     {
         if (ReferenceEquals(null, obj)) return false;
-        return obj is IVector3 && Equals((IVector3) obj);
+        return obj is IVector3 && Equals((IVector3)obj);
     }
 
     public override int GetHashCode()
@@ -385,8 +405,8 @@ public struct IVector3 : IEquatable<IVector3>
         unchecked
         {
             int hashCode = x;
-            hashCode = (hashCode*397) ^ y;
-            hashCode = (hashCode*397) ^ z;
+            hashCode = (hashCode * 397) ^ y;
+            hashCode = (hashCode * 397) ^ z;
             return hashCode;
         }
     }

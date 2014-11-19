@@ -36,7 +36,7 @@ namespace Assets.Unitility.Grid
 
         public static implicit operator Bounds(IntBounds bounds)
         {
-            return new Bounds(0.5f * (Vector3)(bounds.max + bounds.min), bounds.max - bounds.min);
+            return new Bounds(0.5f*(Vector3) (bounds.max + bounds.min), bounds.max - bounds.min);
         }
     }
 
@@ -44,16 +44,15 @@ namespace Assets.Unitility.Grid
     {
         protected IntBounds _bounds;
         protected bool _boundsDirty;
-
-        protected abstract TKey[] Orthogonals { get; }
-        protected abstract TKey[] Diagonals { get; }
-
         protected Dictionary<TKey, TValue> _grid;
 
         protected BaseSparseGrid()
         {
             _grid = new Dictionary<TKey, TValue>();
         }
+
+        protected abstract TKey[] Orthogonals { get; }
+        protected abstract TKey[] Diagonals { get; }
 
         public IEnumerable<TKey> Keys
         {
@@ -125,10 +124,10 @@ namespace Assets.Unitility.Grid
     {
         private readonly IntVector2[] _diagonalArray =
         {
-            new IntVector2(1,1), 
-            new IntVector2(-1,1),
-            new IntVector2(1,-1),
-            new IntVector2(-1,-1)
+            new IntVector2(1, 1),
+            new IntVector2(-1, 1),
+            new IntVector2(1, -1),
+            new IntVector2(-1, -1)
         };
 
         private readonly IntVector2[] _orthogonalArray =
@@ -141,10 +140,10 @@ namespace Assets.Unitility.Grid
             get { return _diagonalArray; }
         }
 
-        protected override IntVector2[] Orthogonals { get
+        protected override IntVector2[] Orthogonals
         {
-            return _orthogonalArray;
-        }}
+            get { return _orthogonalArray; }
+        }
 
         public T this[int x, int y]
         {
@@ -167,36 +166,38 @@ namespace Assets.Unitility.Grid
     {
         private readonly IntVector3[] _diagonalArray =
         {
-           new IntVector3(1,1,1),
-           new IntVector3(-1,1,1),
-           new IntVector3(1,-1,1),
-           new IntVector3(1,1,-1),
-           new IntVector3(-1,-1,1),
-           new IntVector3(1,-1,-1),
-           new IntVector3(-1,1,-1),
-           new IntVector3(-1,-1,-1),
-           new IntVector3(0,1,1),
-           new IntVector3(0,-1,1),
-           new IntVector3(0,1,-1),
-           new IntVector3(0,-1,-1),
-           new IntVector3(1,0,1),
-           new IntVector3(-1,0,1),
-           new IntVector3(1,0,-1),
-           new IntVector3(-1,0,-1),
-           new IntVector3(1,1,0),
-           new IntVector3(-1,1,0),
-           new IntVector3(1,-1,0),
-           new IntVector3(-1,-1,0)
+            new IntVector3(1, 1, 1),
+            new IntVector3(-1, 1, 1),
+            new IntVector3(1, -1, 1),
+            new IntVector3(1, 1, -1),
+            new IntVector3(-1, -1, 1),
+            new IntVector3(1, -1, -1),
+            new IntVector3(-1, 1, -1),
+            new IntVector3(-1, -1, -1),
+            new IntVector3(0, 1, 1),
+            new IntVector3(0, -1, 1),
+            new IntVector3(0, 1, -1),
+            new IntVector3(0, -1, -1),
+            new IntVector3(1, 0, 1),
+            new IntVector3(-1, 0, 1),
+            new IntVector3(1, 0, -1),
+            new IntVector3(-1, 0, -1),
+            new IntVector3(1, 1, 0),
+            new IntVector3(-1, 1, 0),
+            new IntVector3(1, -1, 0),
+            new IntVector3(-1, -1, 0)
         };
+
         private readonly IntVector3[] _orthogonalArray =
         {
-           IntVector3.right, 
-           IntVector3.left, 
-           IntVector3.up, 
-           IntVector3.down, 
-           IntVector3.forward, 
-           IntVector3.back
+            IntVector3.right,
+            IntVector3.left,
+            IntVector3.up,
+            IntVector3.down,
+            IntVector3.forward,
+            IntVector3.back
         };
+
         protected override IntVector3[] Diagonals
         {
             get { return _diagonalArray; }
@@ -204,10 +205,7 @@ namespace Assets.Unitility.Grid
 
         protected override IntVector3[] Orthogonals
         {
-            get
-            {
-                return _orthogonalArray;
-            }
+            get { return _orthogonalArray; }
         }
 
         public T this[int x, int y, int z]

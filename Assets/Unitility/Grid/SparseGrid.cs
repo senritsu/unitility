@@ -29,53 +29,122 @@ using UnityEngine;
 
 namespace Assets.Unitility.Grid
 {
-    public class SparseGrid<T> where T : class
+    public class IntBounds
     {
-        private Bounds _bounds;
-        private bool _boundsDirty;
+        public IntVector3 min { get; set; }
+        public IntVector3 max { get; set; }
 
-        private readonly IntVector2[] _diagonals =
+        public static implicit operator Bounds(IntBounds bounds)
         {
-            IntVector2.one, IntVector2.one - IntVector2.up, -IntVector2.one,
-            IntVector2.one - IntVector2.right
-        };
+            return new Bounds(0.5f * (Vector3)(bounds.max + bounds.min), bounds.max - bounds.min);
+        }
+    }
 
-        private readonly Dictionary<IntVector2, T> _grid;
+    public abstract class BaseSparseGrid<TKey, TValue> where TValue : class
+    {
+        protected IntBounds _bounds;
+        protected bool _boundsDirty;
 
-        private readonly IntVector2[] _orthogonals =
+        protected abstract TKey[] Orthogonals { get; }
+        protected abstract TKey[] Diagonals { get; }
+
+        protected Dictionary<TKey, TValue> _grid;
+
+        protected BaseSparseGrid()
         {
-            IntVector2.up, IntVector2.right, -IntVector2.up, -IntVector2.right
-        };
-
-        public SparseGrid()
-        {
-            _grid = new Dictionary<IntVector2, T>();
+            _grid = new Dictionary<TKey, TValue>();
         }
 
-        public Bounds Bounds
-        {
-            get { return _boundsDirty ? RecalculateBounds() : _bounds; }
-        }
-
-        public IEnumerable<IntVector2> Keys
+        public IEnumerable<TKey> Keys
         {
             get { return _grid.Keys; }
         }
 
-        public IEnumerable<T> Values
+        public IEnumerable<TValue> Values
         {
             get { return _grid.Values; }
         }
 
-        public T this[IntVector2 index]
+        public IntBounds Bounds
+        {
+            get { return _boundsDirty ? RecalculateBounds() : _bounds; }
+        }
+
+        public TValue this[TKey index]
         {
             get
             {
-                T value;
+                TValue value;
                 return _grid.TryGetValue(index, out value) ? value : null;
             }
             set { Add(index, value); }
         }
+
+        public void Add(TKey index, TValue value)
+        {
+            if (!_grid.ContainsKey(index))
+            {
+                ExtendBounds(index);
+            }
+            _grid[index] = value;
+        }
+
+        public void Remove(TKey index)
+        {
+            if (!_grid.ContainsKey(index)) return;
+            _grid.Remove(index);
+            _boundsDirty = true;
+        }
+
+        public IEnumerable<TValue> Neighbors(TKey index, bool includeDiagonals = false)
+        {
+            var result = new List<TValue>();
+            result.AddRange(Orthogonals.Select(v => this[v]).Where(x => x != null));
+            if (includeDiagonals)
+            {
+                result.AddRange(Diagonals.Select(v => this[v]).Where(x => x != null));
+            }
+            return result;
+        }
+
+        protected IntBounds RecalculateBounds()
+        {
+            _bounds = new IntBounds();
+            foreach (var index in _grid.Keys)
+            {
+                ExtendBounds(index);
+            }
+            _boundsDirty = false;
+            return _bounds;
+        }
+
+        protected abstract void ExtendBounds(TKey index);
+    }
+
+    public class SparseGrid2<T> : BaseSparseGrid<IntVector2, T> where T : class
+    {
+        private readonly IntVector2[] _diagonalArray =
+        {
+            new IntVector2(1,1), 
+            new IntVector2(-1,1),
+            new IntVector2(1,-1),
+            new IntVector2(-1,-1)
+        };
+
+        private readonly IntVector2[] _orthogonalArray =
+        {
+            IntVector2.up, IntVector2.right, IntVector2.down, IntVector2.left
+        };
+
+        protected override IntVector2[] Diagonals
+        {
+            get { return _diagonalArray; }
+        }
+
+        protected override IntVector2[] Orthogonals { get
+        {
+            return _orthogonalArray;
+        }}
 
         public T this[int x, int y]
         {
@@ -87,48 +156,74 @@ namespace Assets.Unitility.Grid
             set { Add(new IntVector2(x, y), value); }
         }
 
-        public void Add(IntVector2 index, T value)
+        protected override void ExtendBounds(IntVector2 index)
         {
-            if (!_grid.ContainsKey(index))
-            {
-                _bounds.min = Vector3.Min(_bounds.min, index);
-                _bounds.max = Vector3.Max(_bounds.max, index);
-            }
-            _grid[index] = value;
+            _bounds.min = IntVector2.Min(_bounds.min, index);
+            _bounds.max = IntVector2.Max(_bounds.max, index);
+        }
+    }
+
+    public class SparseGrid3<T> : BaseSparseGrid<IntVector3, T> where T : class
+    {
+        private readonly IntVector3[] _diagonalArray =
+        {
+           new IntVector3(1,1,1),
+           new IntVector3(-1,1,1),
+           new IntVector3(1,-1,1),
+           new IntVector3(1,1,-1),
+           new IntVector3(-1,-1,1),
+           new IntVector3(1,-1,-1),
+           new IntVector3(-1,1,-1),
+           new IntVector3(-1,-1,-1),
+           new IntVector3(0,1,1),
+           new IntVector3(0,-1,1),
+           new IntVector3(0,1,-1),
+           new IntVector3(0,-1,-1),
+           new IntVector3(1,0,1),
+           new IntVector3(-1,0,1),
+           new IntVector3(1,0,-1),
+           new IntVector3(-1,0,-1),
+           new IntVector3(1,1,0),
+           new IntVector3(-1,1,0),
+           new IntVector3(1,-1,0),
+           new IntVector3(-1,-1,0)
+        };
+        private readonly IntVector3[] _orthogonalArray =
+        {
+           IntVector3.right, 
+           IntVector3.left, 
+           IntVector3.up, 
+           IntVector3.down, 
+           IntVector3.forward, 
+           IntVector3.back
+        };
+        protected override IntVector3[] Diagonals
+        {
+            get { return _diagonalArray; }
         }
 
-        public void Remove(IntVector2 index)
+        protected override IntVector3[] Orthogonals
         {
-            if (!_grid.ContainsKey(index)) return;
-            _grid.Remove(index);
-            _boundsDirty = true;
+            get
+            {
+                return _orthogonalArray;
+            }
         }
 
-        public IEnumerable<T> Neighbors(IntVector2 index, bool includeDiagonals = false)
+        public T this[int x, int y, int z]
         {
-            var result = new List<T>();
-            result.AddRange(_orthogonals.Select(v => this[v]).Where(x => x != null));
-            if (includeDiagonals)
+            get
             {
-                result.AddRange(_diagonals.Select(v => this[v]).Where(x => x != null));
+                T value;
+                return _grid.TryGetValue(new IntVector3(x, y, z), out value) ? value : null;
             }
-            return result;
+            set { Add(new IntVector3(x, y, z), value); }
         }
 
-        private Bounds RecalculateBounds()
+        protected override void ExtendBounds(IntVector3 index)
         {
-            var min = IntVector2.zero;
-            var max = IntVector2.zero;
-            foreach (var index in _grid.Keys)
-            {
-                min = IntVector2.Min(min, index);
-                max = IntVector2.Max(max, index);
-            }
-            var center = new Vector3();
-            var size = new Vector3();
-            _bounds = new Bounds(center, size);
-            _boundsDirty = false;
-            return _bounds;
+            _bounds.min = IntVector3.Min(_bounds.min, index);
+            _bounds.max = IntVector3.Max(_bounds.max, index);
         }
     }
 }

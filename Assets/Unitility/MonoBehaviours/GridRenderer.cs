@@ -6,25 +6,25 @@ namespace Assets.Unitility.MonoBehaviours
     public class GridRenderer<T> : MonoBehaviour where T : class
     {
         private Transform _contentContainer;
-        private SparseGrid<T> _grid;
+        private SparseGrid2<T> _grid;
         public float FieldSize;
         public float Spacing;
         // Use this for initialization
         private void Start()
         {
             _contentContainer = transform.Find("Content");
-            _grid = new SparseGrid<T>();
+            _grid = new SparseGrid2<T>();
         }
 
         public void Recenter()
         {
-            var offset = -_grid.Bounds.center;
+            var offset = -((Bounds) _grid.Bounds).center;
             _contentContainer.localPosition = offset;
         }
 
         public T GetField(Vector3 position)
         {
-            position = transform.InverseTransformPoint(position) + _grid.Bounds.center;
+            position = transform.InverseTransformPoint(position) + ((Bounds) _grid.Bounds).center;
 
             var x = Mathf.RoundToInt(position.x/Spacing);
             var y = Mathf.RoundToInt(position.z/Spacing);
@@ -35,7 +35,7 @@ namespace Assets.Unitility.MonoBehaviours
         {
             return
                 transform.TransformPoint(new Vector3(x*(FieldSize + Spacing), 0, y*(FieldSize + Spacing)) -
-                                         _grid.Bounds.center);
+                                         ((Bounds) _grid.Bounds).center);
         }
 
         public

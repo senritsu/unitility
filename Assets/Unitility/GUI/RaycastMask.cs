@@ -32,11 +32,11 @@ public class RaycastMask : MonoBehaviour, ICanvasRaycastFilter
     private Image _image;
     private Sprite _sprite;
 
-	void Start ()
-	{
-	    _image = GetComponent<Image>();
-	}
-	
+    void Start ()
+    {
+        _image = GetComponent<Image>();
+    }
+    
     public bool IsRaycastLocationValid(Vector2 sp, Camera eventCamera)
     {
         _sprite = _image.sprite;

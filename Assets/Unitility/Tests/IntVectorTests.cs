@@ -28,8 +28,8 @@ using NUnit.Framework;
 namespace Assets.Unitility.Tests
 {
     [TestFixture]
-    public class IntVectorTests {
-
+    public class IntVectorTests
+    {
         [Test]
         public void IntVector2RotateTests()
         {
@@ -81,7 +81,7 @@ namespace Assets.Unitility.Tests
             Assert.That(v.RotateXZLeft(), Is.EqualTo(IntVector3.up));
             Assert.That(v.RotateXZRight(), Is.EqualTo(IntVector3.up));
 
-            
+
             v = IntVector3.right;
 
             Assert.That(v.RotateXZLeft(), Is.EqualTo(IntVector3.forward));
@@ -91,7 +91,7 @@ namespace Assets.Unitility.Tests
 
             Assert.That(v.RotateXZLeft(), Is.EqualTo(IntVector3.left));
             Assert.That(v.RotateXZRight(), Is.EqualTo(IntVector3.right));
-            
+
             v = IntVector3.one;
 
             Assert.That(v.RotateXZLeft(), Is.EqualTo(new IntVector3(-1, 1, 1)));
@@ -105,7 +105,7 @@ namespace Assets.Unitility.Tests
 
             Assert.That(v.RotateZYLeft(), Is.EqualTo(IntVector3.back));
             Assert.That(v.RotateZYRight(), Is.EqualTo(IntVector3.forward));
-            
+
             v = IntVector3.right;
 
             Assert.That(v.RotateZYLeft(), Is.EqualTo(IntVector3.right));

@@ -49,6 +49,7 @@ namespace Assets.Unitility.Grid
         protected BaseSparseGrid()
         {
             _grid = new Dictionary<TKey, TValue>();
+            _bounds = new IntBounds();
         }
 
         protected abstract TKey[] Orthogonals { get; }
@@ -62,6 +63,11 @@ namespace Assets.Unitility.Grid
         public IEnumerable<TValue> Values
         {
             get { return _grid.Values; }
+        }
+
+        public bool HasIndex(TKey index)
+        {
+            return _grid.ContainsKey(index);
         }
 
         public IntBounds Bounds
@@ -81,11 +87,18 @@ namespace Assets.Unitility.Grid
 
         public void Add(TKey index, TValue value)
         {
-            if (!_grid.ContainsKey(index))
+            if (value == null)
             {
-                ExtendBounds(index);
+                Remove(index);
             }
-            _grid[index] = value;
+            else
+            {
+                if (!_grid.ContainsKey(index))
+                {
+                    ExtendBounds(index);
+                }
+                _grid[index] = value;
+            }
         }
 
         public void Remove(TKey index)

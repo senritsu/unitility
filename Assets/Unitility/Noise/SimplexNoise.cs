@@ -1,5 +1,6 @@
 // SimplexNoise for C#
 // Author: Heikki Törmälä
+// Modified by: Jonas Schiegl (https://github.com/senritsu)
 
 //This is free and unencumbered software released into the public domain.
 
@@ -25,7 +26,6 @@
 //OTHER DEALINGS IN THE SOFTWARE.
 
 //For more information, please refer to <http://unlicense.org/>
-
 
 namespace SimplexNoise
 {

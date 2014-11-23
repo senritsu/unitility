@@ -499,22 +499,10 @@ namespace Assets.Unitility.Grid
                 return _a;
             }
         }
-        private float _h;
-        private float H
-        {
-            get
-            {
-                if (_dirty)
-                {
-                    RecalculateBaseMetrics();
-                }
-                return _h;
-            }
-        }
+
         private void RecalculateBaseMetrics()
         {
             _a = 0.5f * (1 + _spacing.x) * _scale.x;
-            _h = Sqrt3*_a/2;
             _dirty = false;
         }
 

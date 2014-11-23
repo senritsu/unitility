@@ -431,22 +431,22 @@ namespace Assets.Unitility.Grid
 
         public static readonly IntVector3[] DiagonalArray =
         {
-            new IntVector3(2,-1,-1), 
-            new IntVector3(-2,1,1),
-            new IntVector3(-1,2,-1),
-            new IntVector3(1,-2,1),
-            new IntVector3(-1,-1,2),
-            new IntVector3(1,1,-2),
+            new IntVector3(2,-1, 0), 
+            new IntVector3(-2, 1,0),
+            new IntVector3(-1,-1,0),
+            new IntVector3(1,1,0),
+            new IntVector3(-1,2,0),
+            new IntVector3(1,-2,0),
         };
 
         public static readonly IntVector3[] OrthogonalArray =
         {
-            new IntVector3(1,-1,0), 
-            new IntVector3(1,0,-1),
+            new IntVector3(1,0,0), 
+            new IntVector3(1,-1,0),
+            new IntVector3(-1,0,0),
+            new IntVector3(0,-1,0),
             new IntVector3(-1,1,0),
-            new IntVector3(0,1,-1),
-            new IntVector3(-1,0,1),
-            new IntVector3(0,-1,1),
+            new IntVector3(0,1,0),
         };
 
         protected override IntVector3[] OrthogonalsFor(IntVector3 index)

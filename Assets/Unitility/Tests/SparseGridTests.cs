@@ -72,6 +72,7 @@ namespace Assets.Unitility.Tests
         public void GetsNeighborsCorrectly()
         {
             var grid = new SparseGrid3<String>();
+            var mapper = new PlanarSquareMapper(null);
 
             grid[0, 0, 0] = "a";
             // orthogonal
@@ -84,8 +85,8 @@ namespace Assets.Unitility.Tests
             // not adjacent
             grid[2, 2, 2] = "n";
 
-            Assert.That(grid.Neighbors(IntVector3.zero), Is.EquivalentTo(new[] {"o", "o"}));
-            Assert.That(grid.Neighbors(IntVector3.zero, true), Is.EquivalentTo(new[] {"o", "o", "d", "dd"}));
+            Assert.That(mapper.Neighbors(IntVector3.zero), Is.EquivalentTo(new[] { "o", "o" }));
+            Assert.That(mapper.Neighbors(IntVector3.zero, true), Is.EquivalentTo(new[] { "o", "o", "d", "dd" }));
         }
     }
 }

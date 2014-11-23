@@ -23,7 +23,6 @@ THE SOFTWARE.
 \***************************************************************************/
 
 using System.Collections.Generic;
-using System.Linq;
 using Assets.Unitility.Core;
 using UnityEngine;
 
@@ -51,9 +50,6 @@ namespace Assets.Unitility.Grid
             _grid = new Dictionary<TKey, TValue>();
             _bounds = new IntBounds();
         }
-
-        protected abstract TKey[] Orthogonals { get; }
-        protected abstract TKey[] Diagonals { get; }
 
         public IEnumerable<TKey> Keys
         {
@@ -108,17 +104,6 @@ namespace Assets.Unitility.Grid
             _boundsDirty = true;
         }
 
-        public IEnumerable<TValue> Neighbors(TKey index, bool includeDiagonals = false)
-        {
-            var result = new List<TValue>();
-            result.AddRange(Orthogonals.Select(v => this[v]).Where(x => x != null));
-            if (includeDiagonals)
-            {
-                result.AddRange(Diagonals.Select(v => this[v]).Where(x => x != null));
-            }
-            return result;
-        }
-
         protected IntBounds RecalculateBounds()
         {
             _bounds = new IntBounds();
@@ -135,28 +120,9 @@ namespace Assets.Unitility.Grid
 
     public class SparseGrid2<T> : BaseSparseGrid<IntVector2, T> where T : class
     {
-        private readonly IntVector2[] _diagonalArray =
-        {
-            new IntVector2(1, 1),
-            new IntVector2(-1, 1),
-            new IntVector2(1, -1),
-            new IntVector2(-1, -1)
-        };
 
-        private readonly IntVector2[] _orthogonalArray =
-        {
-            IntVector2.up, IntVector2.right, IntVector2.down, IntVector2.left
-        };
 
-        protected override IntVector2[] Diagonals
-        {
-            get { return _diagonalArray; }
-        }
 
-        protected override IntVector2[] Orthogonals
-        {
-            get { return _orthogonalArray; }
-        }
 
         public T this[int x, int y]
         {
@@ -211,17 +177,7 @@ namespace Assets.Unitility.Grid
             IntVector3.back
         };
 
-        protected override IntVector3[] Diagonals
-        {
-            get { return _diagonalArray; }
-        }
-
-        protected override IntVector3[] Orthogonals
-        {
-            get { return _orthogonalArray; }
-        }
-
-        public T this[int x, int y, int z]
+       public T this[int x, int y, int z]
         {
             get
             {

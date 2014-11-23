@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 \***************************************************************************/
 
+#if UNITY_4_6
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -118,3 +119,4 @@ public class RaycastMask : MonoBehaviour, ICanvasRaycastFilter
         }
     }
 }
+#endif

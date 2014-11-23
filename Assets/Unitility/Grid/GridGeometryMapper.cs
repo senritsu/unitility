@@ -465,25 +465,22 @@ namespace Assets.Unitility.Grid
             var ry = Mathf.RoundToInt(v.y);
             var rz = Mathf.RoundToInt(v.z);
 
-            if (rx + ry + rz == 0) return new IntVector3(rx, ry, rz);
+            if (rx + ry + rz != 0)
+            {
+                var dx = Mathf.Abs(rx - v.x);
+                var dy = Mathf.Abs(ry - v.y);
+                var dz = Mathf.Abs(rz - v.z);
 
-            var dx = Mathf.Abs(rx - v.x);
-            var dy = Mathf.Abs(ry - v.y);
-            var dz = Mathf.Abs(rz - v.z);
-
-            if (dx > dy && dx > dz)
-            {
-                rx = -ry - rz;
+                if (dx > dy && dx > dz)
+                {
+                    rx = -ry - rz;
+                }
+                else if (dy <= dz)
+                {
+                    rz = -rx - ry;
+                }
             }
-            else if (dy > dz)
-            {
-                ry = -rx - rz;
-            }
-            else
-            {
-                rz = -rx - ry;
-            }
-            return new IntVector3(rx, ry, rz);
+            return new IntVector3(rx, rz, 0);
         }
 
         private bool _dirty = true;
@@ -514,11 +511,11 @@ namespace Assets.Unitility.Grid
             {
                 case Orientation.FlatTop:
                     x = A*3f/2*v.x;
-                    y = A*Sqrt3*(v.z + v.x/2f);
+                    y = A*Sqrt3*(v.y + v.x/2f);
                     break;
                 case Orientation.PointyTop:
-                    x = A*Sqrt3*(v.x + v.z/2f);
-                    y = A*3f/2*v.z;
+                    x = A*Sqrt3*(v.x + v.y/2f);
+                    y = A*3f/2*v.y;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

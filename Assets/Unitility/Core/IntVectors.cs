@@ -45,7 +45,7 @@ namespace Assets.Unitility.Core
 
         public int sqrMagnitude
         {
-            get { return x * x + y * y; }
+            get { return x*x + y*y; }
         }
 
         public float magnitude
@@ -101,7 +101,7 @@ namespace Assets.Unitility.Core
 
         public static IntVector2 Scale(IntVector2 v1, IntVector2 v2)
         {
-            return new IntVector2(v1.x * v2.x, v1.y * v2.y);
+            return new IntVector2(v1.x*v2.x, v1.y*v2.y);
         }
 
         public static float Distance(IntVector2 v1, IntVector2 v2)
@@ -111,7 +111,7 @@ namespace Assets.Unitility.Core
 
         public static int Dot(IntVector2 v1, IntVector2 v2)
         {
-            return v1.x * v2.x + v1.y * v2.y;
+            return v1.x*v2.x + v1.y*v2.y;
         }
 
         public static float Angle(IntVector2 v1, IntVector2 v2)
@@ -151,22 +151,22 @@ namespace Assets.Unitility.Core
 
         public static IntVector2 operator *(int i, IntVector2 v)
         {
-            return v * i;
+            return v*i;
         }
 
         public static IntVector2 operator *(IntVector2 v, int i)
         {
-            return new IntVector2(v.x * i, v.y * i);
+            return new IntVector2(v.x*i, v.y*i);
         }
 
         public static IntVector2 operator /(int i, IntVector2 v)
         {
-            return v / i;
+            return v/i;
         }
 
         public static IntVector2 operator /(IntVector2 v, int i)
         {
-            return new IntVector2(v.x / i, v.y / i);
+            return new IntVector2(v.x/i, v.y/i);
         }
 
         public static implicit operator Vector2(IntVector2 v)
@@ -202,14 +202,14 @@ namespace Assets.Unitility.Core
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is IntVector2 && Equals((IntVector2)obj);
+            return obj is IntVector2 && Equals((IntVector2) obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (x * 397) ^ y;
+                return (x*397) ^ y;
             }
         }
 
@@ -245,7 +245,7 @@ namespace Assets.Unitility.Core
 
         public int sqrMagnitude
         {
-            get { return x * x + y * y + z * z; }
+            get { return x*x + y*y + z*z; }
         }
 
         public float magnitude
@@ -307,7 +307,7 @@ namespace Assets.Unitility.Core
 
         public static IntVector3 Scale(IntVector3 v1, IntVector3 v2)
         {
-            return new IntVector3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
+            return new IntVector3(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z);
         }
 
         public static float Distance(IntVector3 v1, IntVector3 v2)
@@ -317,12 +317,12 @@ namespace Assets.Unitility.Core
 
         public static int Dot(IntVector3 v1, IntVector3 v2)
         {
-            return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+            return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
         }
 
         public static IntVector3 Cross(IntVector3 v1, IntVector3 v2)
         {
-            return new IntVector3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
+            return new IntVector3(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x);
         }
 
         public static float Angle(IntVector3 v1, IntVector3 v2)
@@ -362,22 +362,22 @@ namespace Assets.Unitility.Core
 
         public static IntVector3 operator *(int i, IntVector3 v)
         {
-            return v * i;
+            return v*i;
         }
 
         public static IntVector3 operator *(IntVector3 v, int i)
         {
-            return new IntVector3(v.x * i, v.y * i, v.z * i);
+            return new IntVector3(v.x*i, v.y*i, v.z*i);
         }
 
         public static IntVector3 operator /(int i, IntVector3 v)
         {
-            return v / i;
+            return v/i;
         }
 
         public static IntVector3 operator /(IntVector3 v, int i)
         {
-            return new IntVector3(v.x / i, v.y / i, v.z / i);
+            return new IntVector3(v.x/i, v.y/i, v.z/i);
         }
 
         public static implicit operator Vector3(IntVector3 v)
@@ -393,7 +393,7 @@ namespace Assets.Unitility.Core
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is IntVector3 && Equals((IntVector3)obj);
+            return obj is IntVector3 && Equals((IntVector3) obj);
         }
 
         public override int GetHashCode()
@@ -401,8 +401,8 @@ namespace Assets.Unitility.Core
             unchecked
             {
                 var hashCode = x;
-                hashCode = (hashCode * 397) ^ y;
-                hashCode = (hashCode * 397) ^ z;
+                hashCode = (hashCode*397) ^ y;
+                hashCode = (hashCode*397) ^ z;
                 return hashCode;
             }
         }

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 \***************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using Assets.Unitility.Core;
 using UnityEngine;
@@ -39,11 +40,13 @@ namespace Assets.Unitility.Grid
         }
     }
 
+
     public abstract class BaseSparseGrid<TKey, TValue> where TValue : class
     {
         protected IntBounds _bounds;
         protected bool _boundsDirty;
         protected Dictionary<TKey, TValue> _grid;
+        public Func<TKey, TKey> IndexTransform = i => i;
 
         protected BaseSparseGrid()
         {
@@ -61,11 +64,6 @@ namespace Assets.Unitility.Grid
             get { return _grid.Values; }
         }
 
-        public bool HasIndex(TKey index)
-        {
-            return _grid.ContainsKey(index);
-        }
-
         public IntBounds Bounds
         {
             get { return _boundsDirty ? RecalculateBounds() : _bounds; }
@@ -73,16 +71,20 @@ namespace Assets.Unitility.Grid
 
         public TValue this[TKey index]
         {
-            get
-            {
-                TValue value;
-                return _grid.TryGetValue(index, out value) ? value : null;
-            }
+            get { return Get(index); }
             set { Add(index, value); }
+        }
+
+        public TValue Get(TKey index)
+        {
+            index = IndexTransform(index);
+            TValue value;
+            return _grid.TryGetValue(index, out value) ? value : null;
         }
 
         public void Add(TKey index, TValue value)
         {
+            index = IndexTransform(index);
             if (value == null)
             {
                 Remove(index);
@@ -120,10 +122,6 @@ namespace Assets.Unitility.Grid
 
     public class SparseGrid2<T> : BaseSparseGrid<IntVector2, T> where T : class
     {
-
-
-
-
         public T this[int x, int y]
         {
             get
@@ -177,7 +175,7 @@ namespace Assets.Unitility.Grid
             IntVector3.back
         };
 
-       public T this[int x, int y, int z]
+        public T this[int x, int y, int z]
         {
             get
             {

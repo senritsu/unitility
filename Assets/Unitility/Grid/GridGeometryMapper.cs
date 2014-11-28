@@ -1,4 +1,28 @@
-﻿using System;
+﻿/***************************************************************************\
+The MIT License (MIT)
+
+Copyright (c) 2014 Jonas Schiegl (https://github.com/senritsu)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+\***************************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Unitility.Core;
@@ -8,20 +32,36 @@ namespace Assets.Unitility.Grid
 {
     public abstract class GridGeometryMapper
     {
+        public Func<IntVector3, IntVector3> IndexTransform = i => i;
         protected readonly Transform Reference;
-        protected abstract IntVector3[] OrthogonalsFor(IntVector3 index);
-        protected abstract IntVector3[] DiagonalsFor(IntVector3 index);
-        public abstract Vector3 Scale { get; set; }
-        public abstract Vector3 Spacing { get; set; }
 
         protected GridGeometryMapper(Transform reference)
         {
             Reference = reference;
         }
 
-        public abstract Vector3 ToWorld(IntVector3 v);
-        public abstract IntVector3 ToGrid(Vector3 v);
+        public abstract Vector3 Scale { get; set; }
+        public abstract Vector3 Spacing { get; set; }
+        protected abstract IntVector3[] OrthogonalsFor(IntVector3 index);
+        protected abstract IntVector3[] DiagonalsFor(IntVector3 index);
+
+        public Vector3 ToWorld(IntVector3 v)
+        {
+            return InternalToWorld(v);
+        }
+
+        public abstract Vector3 InternalToWorld(IntVector3 v);
+
+        public IntVector3 ToGrid(Vector3 v)
+        {
+            Debug.Log("internal: " + InternalToGrid(v));
+            Debug.Log("transformed: " + IndexTransform(InternalToGrid(v)));
+            return IndexTransform(InternalToGrid(v));
+        }
+
+        public abstract IntVector3 InternalToGrid(Vector3 v);
         public abstract IEnumerable<Vector3> Corners(IntVector3 v, bool includeSpacing = true);
+
         public IEnumerable<IntVector3> Neighbors(IntVector3 index, bool includeDiagonals = false)
         {
             var result = new List<IntVector3>();
@@ -30,15 +70,12 @@ namespace Assets.Unitility.Grid
             {
                 result.AddRange(DiagonalsFor(index).Select(v => v + index));
             }
-            return result;
+            return result.Select(i => IndexTransform(i));
         }
     }
 
     public class PlanarRectangularMapper : GridGeometryMapper
     {
-        public override Vector3 Spacing { get; set; }
-        public override Vector3 Scale { get; set; }
-
         public static readonly IntVector3[] DiagonalArray =
         {
             new IntVector2(1, 1),
@@ -52,9 +89,16 @@ namespace Assets.Unitility.Grid
             IntVector2.up, IntVector2.right, IntVector2.down, IntVector2.left
         };
 
+        public PlanarRectangularMapper(Transform reference) : base(reference)
+        {
+        }
+
+        public override Vector3 Spacing { get; set; }
+        public override Vector3 Scale { get; set; }
+
         protected override IntVector3[] DiagonalsFor(IntVector3 index)
         {
-           return DiagonalArray;
+            return DiagonalArray;
         }
 
         protected override IntVector3[] OrthogonalsFor(IntVector3 index)
@@ -62,15 +106,16 @@ namespace Assets.Unitility.Grid
             return OrthogonalArray;
         }
 
-        public override Vector3 ToWorld(IntVector3 v)
+        public override Vector3 InternalToWorld(IntVector3 v)
         {
-            return Reference.TransformPoint(v.x  * (1 + Spacing.x)  * Scale.x, v.y * (1 + Spacing.y)  * Scale.y, 0);
+            return Reference.TransformPoint(v.x*(1 + Spacing.x)*Scale.x, v.y*(1 + Spacing.y)*Scale.y, 0);
         }
 
-        public override IntVector3 ToGrid(Vector3 v)
+        public override IntVector3 InternalToGrid(Vector3 v)
         {
             v = Reference.InverseTransformPoint(v);
-            return new IntVector3(Mathf.RoundToInt(v.x / ((1 + Spacing.x) * Scale.x)), Mathf.RoundToInt(v.y / ((1 + Spacing.y) * Scale.y)), 0);
+            return new IntVector3(Mathf.RoundToInt(v.x/((1 + Spacing.x)*Scale.x)),
+                Mathf.RoundToInt(v.y/((1 + Spacing.y)*Scale.y)), 0);
         }
 
         public override IEnumerable<Vector3> Corners(IntVector3 v, bool includeSpacing = true)
@@ -83,16 +128,25 @@ namespace Assets.Unitility.Grid
                 0.5f*new Vector3(-Scale.x, -Scale.y),
                 0.5f*new Vector3(-Scale.x, Scale.y)
             };
-            return directions.Select(d => center + Reference.TransformDirection(includeSpacing ? new Vector3((1 + Spacing.x) * d.x, (1 + Spacing.y) * d.y ) : d));
-        }
-
-        public PlanarRectangularMapper(Transform reference) : base(reference)
-        {
+            return
+                directions.Select(
+                    d =>
+                        center +
+                        Reference.TransformDirection(includeSpacing
+                            ? new Vector3((1 + Spacing.x)*d.x, (1 + Spacing.y)*d.y)
+                            : d));
         }
     }
 
     public class PlanarSquareMapper : GridGeometryMapper
     {
+        public PlanarSquareMapper(Transform reference) : base(reference)
+        {
+        }
+
+        public override Vector3 Spacing { get; set; }
+        public override Vector3 Scale { get; set; }
+
         protected override IntVector3[] DiagonalsFor(IntVector3 index)
         {
             return PlanarRectangularMapper.DiagonalArray;
@@ -103,18 +157,16 @@ namespace Assets.Unitility.Grid
             return PlanarRectangularMapper.OrthogonalArray;
         }
 
-        public override Vector3 Spacing { get; set; }
-        public override Vector3 Scale { get; set; }
-
-        public override Vector3 ToWorld(IntVector3 v)
+        public override Vector3 InternalToWorld(IntVector3 v)
         {
-            return Reference.TransformPoint(v.x * (1 + Spacing.x) * Scale.x, v.y * (1 + Spacing.x) * Scale.x, 0);
+            return Reference.TransformPoint(v.x*(1 + Spacing.x)*Scale.x, v.y*(1 + Spacing.x)*Scale.x, 0);
         }
 
-        public override IntVector3 ToGrid(Vector3 v)
+        public override IntVector3 InternalToGrid(Vector3 v)
         {
             v = Reference.InverseTransformPoint(v);
-            return new IntVector3(Mathf.RoundToInt(v.x / ((1 + Spacing.x) * Scale.x)), Mathf.RoundToInt(v.y / ((1 + Spacing.x) * Scale.x)), 0);
+            return new IntVector3(Mathf.RoundToInt(v.x/((1 + Spacing.x)*Scale.x)),
+                Mathf.RoundToInt(v.y/((1 + Spacing.x)*Scale.x)), 0);
         }
 
         public override IEnumerable<Vector3> Corners(IntVector3 v, bool includeSpacing = true)
@@ -122,9 +174,9 @@ namespace Assets.Unitility.Grid
             var center = ToWorld(v);
             var directions = new[]
             {
-                0.5f*Scale.x*new Vector3(1,1),
+                0.5f*Scale.x*new Vector3(1, 1),
                 0.5f*Scale.x*new Vector3(1, -1),
-                0.5f*Scale.x*new Vector3(-1,-1),
+                0.5f*Scale.x*new Vector3(-1, -1),
                 0.5f*Scale.x*new Vector3(-1, 1)
             };
             return
@@ -132,22 +184,14 @@ namespace Assets.Unitility.Grid
                     d =>
                         center +
                         Reference.TransformDirection(includeSpacing
-                            ? (1 + Spacing.x) * d
+                            ? (1 + Spacing.x)*d
                             : d));
-        }
-
-        public PlanarSquareMapper(Transform reference) : base(reference)
-        {
         }
     }
 
     public class CubicMapper : GridGeometryMapper
     {
-        public CubicMapper(Transform reference) : base(reference)
-        {
-        }
-
-        public static readonly IntVector3[] OrthogonalArray = 
+        public static readonly IntVector3[] OrthogonalArray =
         {
             IntVector3.right,
             IntVector3.left,
@@ -157,12 +201,7 @@ namespace Assets.Unitility.Grid
             IntVector3.back
         };
 
-        protected override IntVector3[] OrthogonalsFor(IntVector3 index)
-        {
-            return OrthogonalArray;
-        }
-
-        public static readonly IntVector3[] DiagonalArray = 
+        public static readonly IntVector3[] DiagonalArray =
         {
             new IntVector3(1, 1, 1),
             new IntVector3(-1, 1, 1),
@@ -186,21 +225,30 @@ namespace Assets.Unitility.Grid
             new IntVector3(-1, -1, 0)
         };
 
-        protected override IntVector3[] DiagonalsFor(IntVector3 index)
+        public CubicMapper(Transform reference) : base(reference)
         {
-            return DiagonalArray;
         }
 
         public override Vector3 Spacing { get; set; }
         public override Vector3 Scale { get; set; }
 
-        public override Vector3 ToWorld(IntVector3 v)
+        protected override IntVector3[] OrthogonalsFor(IntVector3 index)
+        {
+            return OrthogonalArray;
+        }
+
+        protected override IntVector3[] DiagonalsFor(IntVector3 index)
+        {
+            return DiagonalArray;
+        }
+
+        public override Vector3 InternalToWorld(IntVector3 v)
         {
             return Reference.TransformPoint(v.x*(1 + Spacing.x)*Scale.x, v.y*(1 + Spacing.x)*Scale.x,
                 v.z*(1 + Spacing.x)*Scale.x);
         }
 
-        public override IntVector3 ToGrid(Vector3 v)
+        public override IntVector3 InternalToGrid(Vector3 v)
         {
             v = Reference.InverseTransformPoint(v);
             return new IntVector3(Mathf.RoundToInt(v.x/((1 + Spacing.x)*Scale.x)),
@@ -212,16 +260,16 @@ namespace Assets.Unitility.Grid
             var center = ToWorld(v);
             var directions = new[]
             {
-                0.5f*Scale.x*new Vector3(1,1,1),
+                0.5f*Scale.x*new Vector3(1, 1, 1),
                 0.5f*Scale.x*new Vector3(1, -1, 1),
-                0.5f*Scale.x*new Vector3(-1,-1, 1),
+                0.5f*Scale.x*new Vector3(-1, -1, 1),
                 0.5f*Scale.x*new Vector3(-1, 1, 1),
-                0.5f*Scale.x*new Vector3(1,1,-1),
+                0.5f*Scale.x*new Vector3(1, 1, -1),
                 0.5f*Scale.x*new Vector3(1, -1, -1),
-                0.5f*Scale.x*new Vector3(-1,-1, -1),
+                0.5f*Scale.x*new Vector3(-1, -1, -1),
                 0.5f*Scale.x*new Vector3(-1, 1, -1)
             };
-            return directions.Select(d => center + Reference.TransformDirection(includeSpacing ? (1+Spacing.x)*d : d));
+            return directions.Select(d => center + Reference.TransformDirection(includeSpacing ? (1 + Spacing.x)*d : d));
         }
     }
 
@@ -229,33 +277,34 @@ namespace Assets.Unitility.Grid
     {
         public static readonly IntVector3[] DiagonalArray =
         {
-            new IntVector3(-1,1,0),
-            new IntVector3(-1,1,1), 
-            new IntVector3(0,1,0),
-            new IntVector3(1,0,0),
-            new IntVector3(1,-1,1),
-            new IntVector3(1,-1, 0),
-            new IntVector3(0,-1, 0),
-            new IntVector3(-1,-1,1),
-            new IntVector3(-1,0,0),
+            new IntVector3(-1, 1, 0),
+            new IntVector3(-1, 1, 1),
+            new IntVector3(0, 1, 0),
+            new IntVector3(1, 0, 0),
+            new IntVector3(1, -1, 1),
+            new IntVector3(1, -1, 0),
+            new IntVector3(0, -1, 0),
+            new IntVector3(-1, -1, 1),
+            new IntVector3(-1, 0, 0)
         };
 
         public static readonly IntVector3[] OrthogonalArray =
         {
-            new IntVector3(0,0,1), new IntVector3(-1, 0, 1), new IntVector3(0, -1, 1)   
+            new IntVector3(0, 0, 1), new IntVector3(-1, 0, 1), new IntVector3(0, -1, 1)
         };
 
-        protected override IntVector3[] DiagonalsFor(IntVector3 index)
-        {
-            return index.z == 0 ? DiagonalArray : DiagonalArray.Select(v => -v).ToArray();
-        }
-
-        protected override IntVector3[] OrthogonalsFor(IntVector3 index)
-        {
-            return index.z == 0 ? OrthogonalArray : OrthogonalArray.Select(v => -v).ToArray();
-        }
-
+        private static readonly float Height = Mathf.Sqrt(3)/2;
+        private float _a;
+        private bool _dirty = true;
         private Vector3 _scale;
+        private Vector3 _spacing;
+        private Vector3 _x;
+        private Vector3 _y;
+        private Vector3 _z;
+
+        public PlanarTriangleMapper(Transform reference) : base(reference)
+        {
+        }
 
         public override Vector3 Scale
         {
@@ -267,8 +316,6 @@ namespace Assets.Unitility.Grid
             }
         }
 
-        private Vector3 _spacing;
-
         public override Vector3 Spacing
         {
             get { return _spacing; }
@@ -279,10 +326,6 @@ namespace Assets.Unitility.Grid
             }
         }
 
-        private bool _dirty = true;
-
-        private static readonly float Height = Mathf.Sqrt(3) / 2;
-        private float _a;
         private float A
         {
             get
@@ -294,7 +337,7 @@ namespace Assets.Unitility.Grid
                 return _a;
             }
         }
-        private Vector3 _x;
+
         private Vector3 X
         {
             get
@@ -307,7 +350,6 @@ namespace Assets.Unitility.Grid
             }
         }
 
-        private Vector3 _y;
         private Vector3 Y
         {
             get
@@ -319,8 +361,6 @@ namespace Assets.Unitility.Grid
                 return _y;
             }
         }
-
-        private Vector3 _z;
 
         private Vector3 Z
         {
@@ -334,25 +374,31 @@ namespace Assets.Unitility.Grid
             }
         }
 
-        public PlanarTriangleMapper(Transform reference) : base(reference)
+        protected override IntVector3[] DiagonalsFor(IntVector3 index)
         {
+            return index.z == 0 ? DiagonalArray : DiagonalArray.Select(v => -v).ToArray();
         }
 
-        public override Vector3 ToWorld(IntVector3 v)
+        protected override IntVector3[] OrthogonalsFor(IntVector3 index)
         {
-            var offsetPos = v.x * X + v.y * Y + (v.z % 2) * Z;
+            return index.z == 0 ? OrthogonalArray : OrthogonalArray.Select(v => -v).ToArray();
+        }
+
+        public override Vector3 InternalToWorld(IntVector3 v)
+        {
+            var offsetPos = v.x*X + v.y*Y + (v.z%2)*Z;
             //-- Debug.DrawLine(_reference.TransformPoint(offsetPos), _reference.TransformPoint(offsetPos)-_reference.forward, Color.yellow, 2);
             return Reference.TransformPoint(offsetPos);
         }
 
-        public override IntVector3 ToGrid(Vector3 worldPos)
+        public override IntVector3 InternalToGrid(Vector3 worldPos)
         {
-            var centerOffset = (1f / 3) * (X + Y);
+            var centerOffset = (1f/3)*(X + Y);
             //-- Debug.DrawLine(worldPos, worldPos - _reference.forward, Color.cyan, 1);
             var localPos = Reference.InverseTransformPoint(worldPos) + centerOffset;
             //-- Debug.DrawLine(worldPos, _reference.TransformPoint(offsetPos), Color.blue, 1);
-            var normalizedY = localPos.y / (Height * A);
-            var normalizedX = localPos.x / A - 0.5f * normalizedY;
+            var normalizedY = localPos.y/(Height*A);
+            var normalizedX = localPos.x/A - 0.5f*normalizedY;
             //-- var gridVector = new Vector3(normalizedX, normalizedY, 0);
             //-- Debug.DrawLine(_reference.TransformPoint(offsetPos), _reference.TransformPoint(gridVector), Color.red, 1);
             var u = Mathf.FloorToInt(normalizedX);
@@ -369,9 +415,9 @@ namespace Assets.Unitility.Grid
         private void RecalculateBaseMetrics()
         {
             _a = (1 + _spacing.x)*_scale.x;
-            _x = _a * Vector3.right;
-            _y = _a * new Vector3(0.5f, Height);
-            _z = _a * new Vector3(0.5f, Height / 3);
+            _x = _a*Vector3.right;
+            _y = _a*new Vector3(0.5f, Height);
+            _z = _a*new Vector3(0.5f, Height/3);
             _dirty = false;
         }
 
@@ -379,13 +425,13 @@ namespace Assets.Unitility.Grid
         {
             var center = ToWorld(v);
             var a = includeSpacing ? A : Scale.x;
-            var h = a * Height;
+            var h = a*Height;
             var directions = new[]
-                    {
-                        new Vector3(0, h*2/3),
-                        new Vector3(0.5f*a, -h/3),
-                        new Vector3(-0.5f*a, -h/3),
-                    };
+            {
+                new Vector3(0, h*2/3),
+                new Vector3(0.5f*a, -h/3),
+                new Vector3(-0.5f*a, -h/3)
+            };
             return directions.Select(d => center + Reference.TransformDirection(v.z == 0 ? d : -d));
         }
     }
@@ -398,8 +444,39 @@ namespace Assets.Unitility.Grid
             PointyTop
         }
 
-        public Orientation Mode { get; set; }
+        private static readonly float Sqrt3 = Mathf.Sqrt(3);
+
+        public static readonly IntVector3[] DiagonalArray =
+        {
+            new IntVector3(2, -1, 0),
+            new IntVector3(-2, 1, 0),
+            new IntVector3(-1, -1, 0),
+            new IntVector3(1, 1, 0),
+            new IntVector3(-1, 2, 0),
+            new IntVector3(1, -2, 0)
+        };
+
+        public static readonly IntVector3[] OrthogonalArray =
+        {
+            new IntVector3(1, 0, 0),
+            new IntVector3(1, -1, 0),
+            new IntVector3(-1, 0, 0),
+            new IntVector3(0, -1, 0),
+            new IntVector3(-1, 1, 0),
+            new IntVector3(0, 1, 0)
+        };
+
+        private float _a;
+        private bool _dirty = true;
         private Vector3 _scale;
+        private Vector3 _spacing;
+
+        public PlanarHexMapper(Transform reference, Orientation mode) : base(reference)
+        {
+            Mode = mode;
+        }
+
+        public Orientation Mode { get; set; }
 
         public override Vector3 Scale
         {
@@ -411,8 +488,6 @@ namespace Assets.Unitility.Grid
             }
         }
 
-        private Vector3 _spacing;
-
         public override Vector3 Spacing
         {
             get { return _spacing; }
@@ -422,32 +497,18 @@ namespace Assets.Unitility.Grid
                 _spacing = value;
             }
         }
-        private static readonly float Sqrt3 = Mathf.Sqrt(3);
 
-        public PlanarHexMapper(Transform reference, Orientation mode) : base(reference)
+        private float A
         {
-            Mode = mode;
+            get
+            {
+                if (_dirty)
+                {
+                    RecalculateBaseMetrics();
+                }
+                return _a;
+            }
         }
-
-        public static readonly IntVector3[] DiagonalArray =
-        {
-            new IntVector3(2,-1, 0), 
-            new IntVector3(-2, 1,0),
-            new IntVector3(-1,-1,0),
-            new IntVector3(1,1,0),
-            new IntVector3(-1,2,0),
-            new IntVector3(1,-2,0),
-        };
-
-        public static readonly IntVector3[] OrthogonalArray =
-        {
-            new IntVector3(1,0,0), 
-            new IntVector3(1,-1,0),
-            new IntVector3(-1,0,0),
-            new IntVector3(0,-1,0),
-            new IntVector3(-1,1,0),
-            new IntVector3(0,1,0),
-        };
 
         protected override IntVector3[] OrthogonalsFor(IntVector3 index)
         {
@@ -483,27 +544,13 @@ namespace Assets.Unitility.Grid
             return new IntVector3(rx, rz, 0);
         }
 
-        private bool _dirty = true;
-        private float _a;
-        private float A
-        {
-            get
-            {
-                if (_dirty)
-                {
-                    RecalculateBaseMetrics();
-                }
-                return _a;
-            }
-        }
-
         private void RecalculateBaseMetrics()
         {
-            _a = 0.5f * (1 + _spacing.x) * _scale.x;
+            _a = 0.5f*(1 + _spacing.x)*_scale.x;
             _dirty = false;
         }
 
-        public override Vector3 ToWorld(IntVector3 v)
+        public override Vector3 InternalToWorld(IntVector3 v)
         {
             float x;
             float y;
@@ -523,7 +570,7 @@ namespace Assets.Unitility.Grid
             return Reference.TransformPoint(new Vector3(x, y, 0));
         }
 
-        public override IntVector3 ToGrid(Vector3 v)
+        public override IntVector3 InternalToGrid(Vector3 v)
         {
             var localPos = Reference.InverseTransformPoint(v);
 
@@ -542,7 +589,7 @@ namespace Assets.Unitility.Grid
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            return RoundToHex(new Vector3(q, -q-r, r));
+            return RoundToHex(new Vector3(q, -q - r, r));
         }
 
         public override IEnumerable<Vector3> Corners(IntVector3 v, bool includeSpacing = true)
@@ -556,14 +603,14 @@ namespace Assets.Unitility.Grid
             switch (Mode)
             {
                 case Orientation.FlatTop:
-                    directions =  new[]
+                    directions = new[]
                     {
                         new Vector3(-0.5f*a, h),
                         new Vector3(0.5f*a, h),
                         new Vector3(a, 0),
                         new Vector3(0.5f*a, -h),
                         new Vector3(-0.5f*a, -h),
-                        new Vector3(-a, 0),
+                        new Vector3(-a, 0)
                     };
                     break;
                 case Orientation.PointyTop:
@@ -574,7 +621,7 @@ namespace Assets.Unitility.Grid
                         new Vector3(h, -0.5f*a),
                         new Vector3(0, -a),
                         new Vector3(-h, -0.5f*a),
-                        new Vector3(-h, 0.5f*a),
+                        new Vector3(-h, 0.5f*a)
                     };
                     break;
                 default:
@@ -583,5 +630,4 @@ namespace Assets.Unitility.Grid
             return directions.Select(d => center + Reference.TransformDirection(d));
         }
     }
-}    
-
+}

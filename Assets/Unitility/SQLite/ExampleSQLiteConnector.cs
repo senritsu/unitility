@@ -67,6 +67,7 @@ namespace Assets.Unitility.SQLite
                 , playerName));
 
             var scores = new List<ExampleScoreModel>();
+            // every call to .Read() advances to the next row of the result set
             while (result.Read())
             {
                 scores.Add(new ExampleScoreModel
@@ -88,7 +89,8 @@ namespace Assets.Unitility.SQLite
                                            "WHERE Scores.name = '{0}' AND Scores.level = {1} " +
                                            "ORDER BY Scores.score DESC"
                 , playerName, level));
-
+            // .Read() will return true if there is at least one row, and advance the cursor to it
+            // there could be more than one row, but we only care about the first here (highscore)
             if (result.Read())
             {
                 return new ExampleScoreModel

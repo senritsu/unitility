@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 \***************************************************************************/
 
+/***************************************************************************\
+ based on http://wiki.unity3d.com/index.php/SQLite
+\***************************************************************************/
+
 using System.Data;
 using Mono.Data.SqliteClient;
 
@@ -49,7 +53,7 @@ namespace Assets.Plugins.SQLite
 
     public abstract class BaseDbAccessor
     {
-        protected abstract string ConnectionString { get; set; }
+        protected abstract string ConnectionString { get; }
 
         public IDataReader SQL(string sql)
         {

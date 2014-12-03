@@ -41,9 +41,9 @@ namespace Assets.Unitility.SQLite
         }
     }
 
-    public class ExampleSQLiteAccessor : BaseDbAccessor
+    public class ExampleDbAccessor : BaseDbAccessor
     {
-        public ExampleSQLiteAccessor()
+        public ExampleDbAccessor()
         {
             SQL("CREATE TABLE IF NOT EXISTS " +
                 "Scores(name TEXT, level INTEGER, score INTEGER)");

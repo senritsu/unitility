@@ -5,7 +5,7 @@ using Assets.Unitility.SQLite;
 
 public class ExampleScript : MonoBehaviour {
 
-    ExampleSQLiteAccessor _db = new ExampleSQLiteAccessor();
+    ExampleDbAccessor _db = new ExampleDbAccessor();
 
     // Use this for initialization
 	void Start () {

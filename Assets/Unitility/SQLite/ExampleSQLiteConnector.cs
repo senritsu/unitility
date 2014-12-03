@@ -34,6 +34,11 @@ namespace Assets.Unitility.SQLite
         public string PlayerName { get; set; }
         public int Level { get; set; }
         public int Score { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("<Score for Player '{0}' in Level '{1}': {2}>", PlayerName, Level, Score);
+        }
     }
 
     public class ExampleSQLiteAccessor : BaseDbAccessor
